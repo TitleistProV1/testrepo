@@ -26,12 +26,17 @@ authorization_client = AuthorizationManagementClient(credential, subscription_id
 graph_client = GraphRbacManagementClient(credential, subscription_id)
 
 # Create a Managed Identity
-scope = '/subscriptions/' + subscription_id + '/resourceGroups/' + resource_group_name
+scope = f'/subscriptions/{subscription_id}/resourceGroups/{resource_group_name}'
+# Find the service principal with the given display name
+service_principal = next(sp for sp in graph_client.service_principals.list() if sp.display_name == managed_identity_name)
+principal_id = service_principal.object_id
+
+# Assign the role to the Managed Identity
 managed_identity = authorization_client.role_assignments.create(
     scope=scope,
     role_assignment_name=managed_identity_name,
     parameters=RoleAssignmentCreateParameters(
-        principal_id=graph_client.service_principals.list(filter=f"displayName eq '{managed_identity_name}'")[0].object_id,
+        principal_id=principal_id,
         role_definition_id=RoleDefinition(
             id='/subscriptions/{subscription_id}/providers/Microsoft.Authorization/roleDefinitions/IDENTITY_ASSIGNMENTS',
         ),
@@ -49,7 +54,7 @@ app_id = app.app_id
 permission = graph_client.oauth2PermissionGrants.create(
     filter=f"clientId eq '{app_id}' and resourceAppId eq '00000003-0000-0ff1-ce00-000000000000'",
     consent_type="Principal",
-    principal_id=managed_identity.principal_id,
+    principal_id=principal_id,
     resource_access=[{
         "resourceAppId": "00000003-0000-0ff1-ce00-000000000000",
         "resource_access": [
