@@ -33,9 +33,6 @@ service_principal = next(sp for sp in graph_client.service_principals.list() if 
 # Get the object_id from the service principal
 principal_id = service_principal.object_id
 
-# Get the object_id from the service principal
-principal_id = service_principal.object_id
-
 # Assign the role to the Managed Identity
 role_definition_id = '/subscriptions/{subscription_id}/providers/Microsoft.Authorization/roleDefinitions/IDENTITY_ASSIGNMENTS'
 role_assignment_name = managed_identity_name
@@ -55,14 +52,16 @@ app = graph_client.applications.create(
 
 # Add the "SecurityEvents.ReadWrite.All" permission
 app_id = app.app_id
+filter = f"clientId eq '{app_id}' and resourceAppId eq '00000003-0000-0ff1-ce00-000000000000'"
 permission = graph_client.oauth2PermissionGrants.create(
-    filter=f"clientId eq '{app_id}' and resourceAppId eq '00000003-0000-0ff1-ce00-000000000000'",
+    filter=filter,
     consent_type="Principal",
     principal_id=principal_id,
     resource_access=[
         {
             "resourceAppId": "00000003-0000-0ff1-ce00-000000000000",
-            "resource_access": [{"id": "a15484ba-e580-490e-b712-07566ed7c2b2", "type": "Scope"}],
+            "resource_access": [{"id": "a15484ba-e580-490e-b712-07566ed7c2b2", "type": "Scope"},
+            ],
         }
     ]
 )
