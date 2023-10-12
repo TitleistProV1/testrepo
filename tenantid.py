@@ -1,6 +1,15 @@
-from azure.identity import DefaultAzureCredential
-from azure.keyvault.secrets import SecretClient
-import os
+import subprocess
+
+# Define the packages to install
+packages_to_install = ["os", "azure-keyvault-secrets", "azure-identity"]
+
+# Run the pip install command
+for package in packages_to_install:
+    install_command = f"pip install {package}"
+    subprocess.run(install_command, shell=True, check=True)
+
+# The script will continue after the installation is complete
+print("Installation is complete, and the script can continue.")
 
 # Define the Key Vault URL and the name for the secret that will store the tenant ID
 KEY_VAULT_URL = "https://gtgkeyvault.vault.azure.net"
