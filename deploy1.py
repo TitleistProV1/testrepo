@@ -28,20 +28,21 @@ graph_client = GraphRbacManagementClient(credential, subscription_id)
 # Create a Managed Identity
 scope = f'/subscriptions/{subscription_id}/resourceGroups/{resource_group_name}'
 # Find the service principal with the given display name
-service_principal = next(sp for sp in graph_client.service_principals.list() if sp.display_name == managed_identity_name)
-principal_id = service_principal.object_id
+service_principals = list(graph_client.service_principals.list(filter=f"displayName eq '{managed_identity_name}'"))
+if not service_principals:
+    raise Exception(f"Service principal with name '{managed_identity_name}' not found.")
+principal_id = service_principals[0].object_id
 
 # Assign the role to the Managed Identity
-managed_identity = authorization_client.role_assignments.create(
-    scope=scope,
-    role_assignment_name=managed_identity_name,
-    parameters=RoleAssignmentCreateParameters(
-        principal_id=principal_id,
-        role_definition_id=RoleDefinition(
-            id='/subscriptions/{subscription_id}/providers/Microsoft.Authorization/roleDefinitions/IDENTITY_ASSIGNMENTS',
-        ),
-    )
+role_definition_id = '/subscriptions/{subscription_id}/providers/Microsoft.Authorization/roleDefinitions/IDENTITY_ASSIGNMENTS'
+role_assignment_name = managed_identity_name
+
+role_assignment = RoleAssignmentCreateParameters(
+    role_definition_id=role_definition_id,
+    principal_id=principal_id,
 )
+
+managed_identity = authorization_client.role_assignments.create(scope, role_assignment_name, role_assignment)
 
 # Register an Azure AD app
 app = graph_client.applications.create(
@@ -55,12 +56,11 @@ permission = graph_client.oauth2PermissionGrants.create(
     filter=f"clientId eq '{app_id}' and resourceAppId eq '00000003-0000-0ff1-ce00-000000000000'",
     consent_type="Principal",
     principal_id=principal_id,
-    resource_access=[{
-        "resourceAppId": "00000003-0000-0ff1-ce00-000000000000",
-        "resource_access": [
-            {"id": "a15484ba-e580-490e-b712-07566ed7c2b2", "type": "Scope"},
-        ],
-    }
+    resource_access=[
+        {
+            "resourceAppId": "00000003-0000-0ff1-ce00-000000000000",
+            "resource_access": [{"id": "a15484ba-e580-490e-b712-07566ed7c2b2", "type": "Scope"}],
+        }
     ]
 )
 
