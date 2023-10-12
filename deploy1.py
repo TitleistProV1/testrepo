@@ -52,7 +52,7 @@ app = graph_client.applications.create(
 
 # Add the "SecurityEvents.ReadWrite.All" permission
 app_id = app.app_id
-filter = f"clientId eq '{app_id}' and resourceAppId eq '00000003-0000-0ff1-ce00-000000000000'"
+filter = "clientId eq '{}' and resourceAppId eq '00000003-0000-0ff1-ce00-000000000000'".format(app_id)
 permission = graph_client.oauth2PermissionGrants.create(
     filter=filter,
     consent_type="Principal",
