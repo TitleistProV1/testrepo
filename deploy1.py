@@ -26,12 +26,15 @@ authorization_client = AuthorizationManagementClient(credential, subscription_id
 graph_client = GraphRbacManagementClient(credential, subscription_id)
 
 # Create a Managed Identity
-scope = f'/subscriptions/{subscription_id}/resourceGroups/{resource_group_name}'
+scope = '/subscriptions/' + subscription_id + '/resourceGroups/' + resource_group_name
 # Find the service principal with the given display name
-service_principals = list(graph_client.service_principals.list(filter=f"displayName eq '{managed_identity_name}'"))
-if not service_principals:
-    raise Exception(f"Service principal with name '{managed_identity_name}' not found.")
-principal_id = service_principals[0].object_id
+service_principal = next(sp for sp in graph_client.service_principals.list() if sp.display_name == managed_identity_name)
+
+# Get the object_id from the service principal
+principal_id = service_principal.object_id
+
+# Get the object_id from the service principal
+principal_id = service_principal.object_id
 
 # Assign the role to the Managed Identity
 role_definition_id = '/subscriptions/{subscription_id}/providers/Microsoft.Authorization/roleDefinitions/IDENTITY_ASSIGNMENTS'
