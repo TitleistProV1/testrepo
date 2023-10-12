@@ -26,7 +26,7 @@ authorization_client = AuthorizationManagementClient(credential, subscription_id
 graph_client = GraphRbacManagementClient(credential, subscription_id)
 
 # Create a Managed Identity
-scope = f'/subscriptions/{subscription_id}/resourceGroups/{resource_group_name}'
+scope = '/subscriptions/' + subscription_id + '/resourceGroups/' + resource_group_name
 managed_identity = authorization_client.role_assignments.create(
     scope=scope,
     role_assignment_name=managed_identity_name,
