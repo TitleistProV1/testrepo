@@ -12,6 +12,7 @@ for package in packages_to_install:
 print("Installation is complete, and the script can continue.")
 
 import os
+from azure.identity import DefaultAzureCredential
 
 # Define the Key Vault URL and the name for the secret that will store the tenant ID
 KEY_VAULT_URL = "https://gtgkeyvault.vault.azure.net"
